@@ -1,0 +1,16 @@
+# MATLAB
+*.asv
+*.m~
+*.mex*
+slprj/
+*.autosave
+# Exportaciones de prueba de la app
+resultados_*.csv
+resultados_*.xlsx
+resultados_*.mat
+*_original.png
+*_procesada.png
+*_tiempo_real_*.png
+# Sistema
+.DS_Store
+Thumbs.db
