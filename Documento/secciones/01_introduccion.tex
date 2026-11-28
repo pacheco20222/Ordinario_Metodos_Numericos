@@ -1,0 +1,26 @@
+\section{Introducción}
+
+Los teléfonos inteligentes traen sensores de movimiento (acelerómetro, giroscopio y magnetómetro) que, con una aplicación adecuada, funcionan como instrumentos de medición de bajo costo. La aplicación phyphox fue diseñada para usar esos sensores en experimentos de física y permite exportar los datos crudos para analizarlos fuera del teléfono \parencite{staacks2018}. Una señal de aceleración real, sin embargo, no puede usarse tal cual. El muestreo es discreto y puede perder muestras, el sensor tiene un sesgo que se acumula al integrar, aparecen picos espurios y la información útil (la velocidad, el desplazamiento o la frecuencia de vibración) solo se obtiene después de derivar, integrar o ajustar los datos. Estas tareas son justamente el campo de los métodos numéricos \parencite{chapra2015}.
+
+Este proyecto integra en una sola herramienta los algoritmos del curso para resolver un problema real de ingeniería: caracterizar la vibración de un automóvil a partir de mediciones con un teléfono. El sistema físico elegido, autorizado por el profesor, es un Kia Forte L 2019 con motor de cuatro cilindros. Un motor de combustión de cuatro tiempos produce una vibración periódica cuya frecuencia depende de su velocidad de giro, así que medir esa frecuencia permite estimar las revoluciones por minuto sin un tacómetro.
+
+\subsection{Planteamiento del problema}
+
+Se requiere una interfaz gráfica en \matlab{} que, a partir de un archivo de datos de aceleración, realice los procesos solicitados: duración total de la señal, detección e interpolación de datos faltantes, derivada, integral y línea de tendencia por mínimos cuadrados. Debe permitir elegir algoritmos y parámetros, graficar los datos originales y procesados, mostrar los valores obtenidos y guardar los resultados en un archivo cuyo nombre indique el usuario, quien además controla el inicio y el fin de la grabación de la señal en tiempo real.
+
+\subsection{Objetivos}
+
+\subsubsection{Objetivo general}
+Desarrollar una aplicación en \matlab{} que integre interpolación, diferenciación, integración, solución de ecuaciones diferenciales y mínimos cuadrados para analizar la vibración real de un automóvil medida con un teléfono, y justificar con evidencia cuantitativa qué métodos resultan más efectivos.
+
+\subsubsection{Objetivos específicos}
+\begin{enumerate}
+  \item Implementar los métodos numéricos sin depender de las funciones equivalentes de \matlab{} y validarlos contra una solución analítica, comprobando su orden de convergencia.
+  \item Detectar y reconstruir datos faltantes y valores atípicos en señales medidas.
+  \item Estimar la frecuencia de vibración del motor y relacionarla con su velocidad de giro.
+  \item Obtener velocidad y desplazamiento por integración y corregir la deriva del sensor con mínimos cuadrados.
+  \item Construir una interfaz con carga de datos, menús de algoritmos, gráficas, indicadores, reproducción en tiempo real y exportación de resultados.
+\end{enumerate}
+
+\subsection{Alcance}
+Se analizan tres mediciones reales de alrededor de un minuto cada una, tomadas con el mismo teléfono a una frecuencia de muestreo de 100~Hz, y una señal sintética con solución conocida. La herramienta acepta archivos CSV y Excel exportados por phyphox, archivos MAT de \matlab{} Mobile y tablas genéricas cuya primera columna sea el tiempo. Queda fuera del alcance la fusión de sensores (acelerómetro con giroscopio) para corregir la orientación del teléfono durante la conducción.

@@ -1,0 +1,146 @@
+\section{Marco teórico}
+
+\subsection{Señales muestreadas}
+
+Una señal medida es un conjunto de pares $(t_k, y_k)$, $k = 0,1,\dots,N$. Cuando el paso de muestreo $h$ es constante, $t_k = t_0 + kh$ y la frecuencia de muestreo es $f_s = 1/h$. La duración total de la señal es
+\begin{equation}
+  T = t_N - t_0 .
+  \label{eq:duracion}
+\end{equation}
+Como los tiempos reales presentan pequeñas variaciones (\textit{jitter}), en este trabajo el paso nominal se estima con la mediana de las diferencias, $h = \operatorname{mediana}(t_{k+1} - t_k)$, que no se ve afectada por huecos aislados.
+
+El teorema de muestreo establece que una señal de banda limitada queda determinada por sus muestras solo si su frecuencia máxima cumple $f_{\max} < f_s/2$ \parencite{shannon1949}. A $f_s/2$ se le llama frecuencia de Nyquist. Con $f_s = 100$~Hz, cualquier vibración por encima de 50~Hz aparece en una frecuencia falsa (\textit{aliasing}). Una relación útil para todo el análisis es el número de muestras por ciclo, $f_s/f$. Para la vibración del motor ($f \approx 25$~Hz) es de apenas cuatro, un dato que explica varios de los resultados de la sección~\ref{sec:analisis}.
+
+\subsection{Detección de datos faltantes y valores atípicos}
+
+Se distinguen tres tipos de dato faltante:
+\begin{enumerate}
+  \item \textit{Valores no numéricos} (NaN), es decir, muestras perdidas o corruptas.
+  \item \textit{Huecos temporales}: muestras eliminadas, detectadas cuando
+  \begin{equation}
+    t_{k+1} - t_k > c \cdot h, \qquad c = 1.5 .
+  \end{equation}
+  \item \textit{Valores atípicos}: muestras físicamente imposibles que conviene tratar como faltantes. Se detectan con el filtro de Hampel, basado en estadísticos robustos \parencite{hampel1974}. Para cada muestra se toma una ventana de $2k+1$ valores y se calculan
+  \begin{equation}
+    m_i = \operatorname{mediana}\{y_{i-k},\dots,y_{i+k}\}, \qquad
+    S_i = 1.4826 \cdot \operatorname{mediana}\{|y_j - m_i|\} ,
+  \end{equation}
+  y la muestra se declara atípica si $|y_i - m_i| > n_\sigma S_i$ (aquí $k = 25$ y $n_\sigma = 5$). El factor 1.4826 hace que $S_i$ estime la desviación estándar de una distribución normal. A diferencia de la desviación estándar, $S_i$ no se contamina con el propio valor atípico.
+\end{enumerate}
+
+\subsection{Interpolación}
+
+Los puntos faltantes de una malla uniforme $t_0, t_0 + h, \dots$ se reconstruyen a partir de las muestras válidas $(x_i, y_i)$.
+
+\paragraph{Interpolación lineal.} Para $x_i \le x \le x_{i+1}$,
+\begin{equation}
+  p(x) = y_i + \frac{y_{i+1} - y_i}{x_{i+1} - x_i}\,(x - x_i).
+\end{equation}
+
+\paragraph{Polinomio de Newton en diferencias divididas.} Con $n+1$ nodos,
+\begin{equation}
+  p_n(x) = f[x_0] + f[x_0,x_1](x - x_0) + \dots + f[x_0,\dots,x_n]\prod_{j=0}^{n-1}(x - x_j),
+\end{equation}
+donde $f[x_i,\dots,x_{i+m}] = \bigl(f[x_{i+1},\dots,x_{i+m}] - f[x_i,\dots,x_{i+m-1}]\bigr)/(x_{i+m} - x_i)$ \parencite{chapra2015}. Un polinomio global de grado alto oscila entre nodos (fenómeno de Runge), por lo que se usa un polinomio \emph{local} de grado 3, construido con los cuatro nodos más cercanos al punto a interpolar y evaluado con el esquema de Horner.
+
+\paragraph{Trazador cúbico natural.} En cada intervalo $[x_i, x_{i+1}]$, con $h_i = x_{i+1} - x_i$ y $M_i = S''(x_i)$,
+\begin{equation}
+  S_i(x) = A\,y_i + B\,y_{i+1} + \frac{(A^3 - A)M_i + (B^3 - B)M_{i+1}}{6}\,h_i^2,
+  \qquad A = \frac{x_{i+1} - x}{h_i},\; B = 1 - A .
+\end{equation}
+La continuidad de la primera derivada lleva al sistema tridiagonal
+\begin{equation}
+  h_{i-1}M_{i-1} + 2(h_{i-1} + h_i)M_i + h_i M_{i+1}
+  = 6\left(\frac{y_{i+1} - y_i}{h_i} - \frac{y_i - y_{i-1}}{h_{i-1}}\right),
+  \qquad M_0 = M_n = 0 ,
+  \label{eq:spline}
+\end{equation}
+que se resuelve en $O(n)$ operaciones con el algoritmo de Thomas, una eliminación gaussiana especializada para matrices tridiagonales \parencite{burden2017}.
+
+\subsection{Diferenciación numérica}
+
+A partir de la serie de Taylor se obtienen las fórmulas de diferencias finitas \parencite{chapra2015}:
+\begin{align}
+  \text{Adelante:}\quad & f'(x) \approx \frac{f(x+h) - f(x)}{h}, & E &= O(h), \\
+  \text{Atrás:}\quad & f'(x) \approx \frac{f(x) - f(x-h)}{h}, & E &= O(h), \\
+  \text{Centrada:}\quad & f'(x) \approx \frac{f(x+h) - f(x-h)}{2h}, & E &= O(h^2), \\
+  \text{Cinco puntos:}\quad & f'(x) \approx \frac{-f(x+2h) + 8f(x+h) - 8f(x-h) + f(x-2h)}{12h}, & E &= O(h^4).
+\end{align}
+En los extremos de la señal se usan fórmulas unilaterales del mismo orden, por ejemplo $f'(x_0) \approx (-3f_0 + 4f_1 - f_2)/(2h)$.
+
+El orden indica cómo disminuye el error al reducir $h$, pero en una señal muestreada $h$ es fijo. Para una oscilación $f(t) = e^{i\omega t}$, cada fórmula devuelve la derivada exacta multiplicada por un factor que depende de $\theta = \omega h$:
+\begin{equation}
+  |G_{\text{adel}}| = \frac{2\sin(\theta/2)}{\theta}, \qquad
+  G_{\text{cent}} = \frac{\sin\theta}{\theta}, \qquad
+  G_{5} = \frac{8\sin\theta - \sin 2\theta}{6\theta} .
+  \label{eq:factor}
+\end{equation}
+Un factor menor que 1 significa que la derivada numérica subestima la amplitud real; la fórmula de adelante, además, introduce un desfase de $\theta/2$.
+
+\subsection{Integración numérica}
+
+Con $n$ intervalos de ancho $h$ \parencite{chapra2015}:
+\begin{align}
+  \text{Trapecio:}\quad & I \approx \frac{h}{2}\Bigl[f_0 + 2\sum_{i=1}^{n-1} f_i + f_n\Bigr], & E &= O(h^2), \\
+  \text{Simpson 1/3:}\quad & I \approx \frac{h}{3}\Bigl[f_0 + 4\!\!\sum_{i\ \text{impar}}\!\! f_i + 2\!\!\sum_{i\ \text{par}}\!\! f_i + f_n\Bigr], & E &= O(h^4), \\
+  \text{Simpson 3/8:}\quad & I \approx \frac{3h}{8}\bigl[f_0 + 3f_1 + 3f_2 + 2f_3 + \dots + f_n\bigr], & E &= O(h^4).
+\end{align}
+Simpson 1/3 requiere un número par de intervalos y Simpson 3/8, un múltiplo de tres. Cuando no se cumple esa condición, el residuo se integra con la otra regla de Simpson para conservar el orden $O(h^4)$.
+
+Para la integral acumulada $\int_{t_0}^{t_k} f\dd t$, que es la velocidad cuando $f$ es una aceleración, cada intervalo se integra con la parábola que pasa por tres nodos vecinos:
+\begin{equation}
+  \int_{x_0}^{x_1} f\dd x \approx \frac{h}{12}\bigl(5f_0 + 8f_1 - f_2\bigr),
+  \qquad
+  \int_{x_1}^{x_2} f\dd x \approx \frac{h}{12}\bigl(-f_0 + 8f_1 + 5f_2\bigr).
+\end{equation}
+La suma de ambos tramos es exactamente la regla de Simpson 1/3.
+
+\subsection{Ecuaciones diferenciales ordinarias}
+
+La cinemática del teléfono a partir de la aceleración medida $a(t)$ es el sistema
+\begin{equation}
+  \frac{\dd x}{\dd t} = v, \qquad \frac{\dd v}{\dd t} = a(t), \qquad x(t_0) = 0,\; v(t_0) = 0 .
+  \label{eq:edo}
+\end{equation}
+Con $\mathbf{y} = (x, v)^T$ y $\mathbf{f}(t,\mathbf{y}) = (v, a(t))^T$ se aplican los métodos \parencite{chapra2015,burden2017}:
+\begin{align}
+  \text{Euler:}\quad & \mathbf{y}_{k+1} = \mathbf{y}_k + h\,\mathbf{f}(t_k,\mathbf{y}_k), \qquad O(h), \\
+  \text{Heun:}\quad & \mathbf{y}_{k+1} = \mathbf{y}_k + \tfrac{h}{2}\bigl[\mathbf{f}(t_k,\mathbf{y}_k) + \mathbf{f}(t_{k+1},\mathbf{y}_k + h\mathbf{f}(t_k,\mathbf{y}_k))\bigr], \qquad O(h^2), \\
+  \text{RK4:}\quad & \mathbf{y}_{k+1} = \mathbf{y}_k + \tfrac{h}{6}\bigl(\mathbf{k}_1 + 2\mathbf{k}_2 + 2\mathbf{k}_3 + \mathbf{k}_4\bigr), \qquad O(h^4),
+\end{align}
+con $\mathbf{k}_1 = \mathbf{f}(t_k,\mathbf{y}_k)$, $\mathbf{k}_2 = \mathbf{f}(t_k + h/2, \mathbf{y}_k + h\mathbf{k}_1/2)$, $\mathbf{k}_3 = \mathbf{f}(t_k + h/2, \mathbf{y}_k + h\mathbf{k}_2/2)$ y $\mathbf{k}_4 = \mathbf{f}(t_k + h, \mathbf{y}_k + h\mathbf{k}_3)$. RK4 necesita $a(t_k + h/2)$, un instante donde no hay muestra; ese valor se obtiene con el polinomio de Newton local de grado 3.
+
+\subsection{Mínimos cuadrados}
+
+La línea de tendencia de grado $g$ minimiza $S_r = \sum_i \bigl(y_i - p(t_i)\bigr)^2$. Para evitar el mal condicionamiento de la matriz de Vandermonde se usa la variable escalada $s = (t - \mu)/\sigma$ y el modelo $p(s) = \sum_{j=0}^{g} a_j s^j$. Los coeficientes resuelven las ecuaciones normales
+\begin{equation}
+  \bigl(\mathbf{Z}^T\mathbf{Z}\bigr)\,\mathbf{a} = \mathbf{Z}^T\mathbf{y}, \qquad Z_{ij} = s_i^{\,j},
+  \label{eq:normales}
+\end{equation}
+mediante eliminación gaussiana con pivoteo parcial \parencite{chapra2015}. La calidad del ajuste se mide con
+\begin{equation}
+  R^2 = 1 - \frac{S_r}{S_t}, \qquad S_t = \sum_i (y_i - \bar y)^2, \qquad
+  S_{y/x} = \sqrt{\frac{S_r}{n - (g+1)}} .
+\end{equation}
+El caso $g = 0$ es la media de los datos.
+
+\subsection{Deriva del acelerómetro}
+\label{sec:deriva}
+
+Si el sensor mide $a_m(t) = a(t) + b$, con un sesgo constante $b$, al integrar dos veces el error crece como
+\begin{equation}
+  \Delta v(t) = b\,t, \qquad \Delta x(t) = \tfrac{1}{2}\,b\,t^2 .
+  \label{eq:deriva}
+\end{equation}
+Un sesgo de apenas $0.064$~m/s$^2$ durante 64~s produce $\Delta x \approx 131$~m. Por eso, antes de integrar, se resta un modelo del sesgo obtenido por mínimos cuadrados: de grado 0 (sesgo constante), de grado 1 (sesgo más deriva térmica lineal) o la media de un intervalo inicial en reposo.
+
+\subsection{Análisis espectral y velocidad del motor}
+
+La transformada discreta de Fourier descompone la señal en frecuencias $f_m = m/(Nh)$, con resolución $\Delta f = 1/T$. Se calcula con el algoritmo FFT \parencite{cooley1965}. En un motor de cuatro tiempos cada cilindro produce una explosión cada dos vueltas del cigüeñal, de modo que la frecuencia de encendido y la velocidad de giro se relacionan por
+\begin{equation}
+  f = \frac{\text{rpm}}{60}\cdot\frac{n_{\text{cil}}}{2}
+  \quad\Longrightarrow\quad
+  \text{rpm} = \frac{120\,f}{n_{\text{cil}}} ,
+  \label{eq:rpm}
+\end{equation}
+que para el motor de cuatro cilindros del caso de estudio se reduce a $\text{rpm} = 30f$.

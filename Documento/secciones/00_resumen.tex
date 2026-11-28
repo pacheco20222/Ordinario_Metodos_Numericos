@@ -1,0 +1,14 @@
+\section*{Resumen}
+\addcontentsline{toc}{section}{Resumen}
+
+Se desarrolló en \matlab{} una aplicación con interfaz gráfica para analizar numéricamente señales de aceleración medidas con el acelerómetro de un teléfono inteligente. El caso de estudio fue la vibración de un automóvil Kia Forte L 2019 con motor de cuatro cilindros. Se midió con un iPhone 15 Pro Max y la aplicación phyphox a 100~Hz, en tres condiciones: sobre el cofre con el motor en ralentí, sobre el descansabrazos de la cabina con el vehículo estacionado y sobre el tablero durante la conducción.
+
+La aplicación calcula la duración de la señal, detecta datos faltantes y valores atípicos (filtro de Hampel) y reconstruye la señal sobre una malla uniforme por interpolación lineal, polinomial de Newton o trazador cúbico natural. Además obtiene la derivada con cuatro esquemas de diferencias finitas, integra con las reglas del trapecio y de Simpson 1/3 y 3/8, resuelve la ecuación diferencial del movimiento con Euler, Heun y Runge-Kutta de cuarto orden, y ajusta líneas de tendencia por mínimos cuadrados que también sirven para corregir la deriva del sensor. Incluye reproducción en tiempo real con grabación controlada por el usuario y exportación de resultados con nombre de archivo elegido.
+
+Todos los métodos se validaron contra una señal con solución analítica: los órdenes de convergencia observados (1.00, 2.00 y 3.99 para las derivadas; 2.00 y 4.00 para las integrales; 1.11, 2.00 y 3.94 para la ecuación diferencial) coinciden con la teoría. Con datos reales, la frecuencia dominante de 25.26~Hz corresponde a unas 758~rpm de ralentí con el motor frío y bajó a 22.86~Hz (686~rpm) al calentarse. Este valor coincide con el de phyphox con una diferencia de 0.2~Hz.
+
+La corrección de deriva por mínimos cuadrados redujo el desplazamiento falso del vehículo estacionado de 127~m a 0.31~m. Con la vibración real la interpolación lineal superó al trazador cúbico, porque la señal tiene cerca de cuatro muestras por ciclo; en una señal suave ocurre lo contrario. Por eso se concluye que el método más efectivo depende de la relación entre la frecuencia de la señal y la de muestreo.
+
+\textit{Palabras clave:} métodos numéricos, interpolación, diferenciación numérica, integración numérica, Runge-Kutta, mínimos cuadrados, acelerómetro, vibraciones, \matlab{}.
+
+\clearpage

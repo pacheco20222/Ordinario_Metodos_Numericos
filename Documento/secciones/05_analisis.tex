@@ -1,0 +1,49 @@
+\section{Análisis de resultados}
+\label{sec:analisis}
+
+\subsection{Efectividad de los métodos en el algoritmo integrador}
+
+La Tabla~\ref{tab:efectividad} resume qué método resultó más efectivo en cada proceso y la evidencia que lo respalda. La conclusión general es que el orden de convergencia no basta para decidir. Con datos reales manda la relación entre la frecuencia de la señal y la de muestreo, junto con el ruido y el sesgo del sensor.
+
+\begin{longtable}{@{}p{2.4cm}p{3.2cm}p{4.3cm}p{4.3cm}@{}}
+\caption{Método más efectivo en cada proceso}\label{tab:efectividad}\\
+\toprule
+Proceso & Método elegido & Evidencia & Justificación \\
+\midrule
+\endfirsthead
+\toprule
+Proceso & Método elegido & Evidencia & Justificación \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Atípicos & Hampel local & 106 falsos positivos con umbral global; 1 a 5 por eje con Hampel & La señal no es estacionaria: un umbral global confunde los baches reales con errores \\
+Interpolación (datos reales) & Lineal & RMSE de 0.41 a 0.62 contra 0.62 a 1.04 del trazador & Con cerca de 4 muestras por ciclo, los polinomios cúbicos sobreoscilan entre muestras; la lineal queda acotada por sus vecinos \\
+Interpolación (señal suave) & Trazador natural & $3.0\times10^{-5}$ contra $1.5\times10^{-2}$ de la lineal & Con más de 70 muestras por ciclo, la curvatura continua del trazador reproduce bien la señal \\
+Derivada & Cinco puntos & Orden 3.99; conserva el 84\,\% de la amplitud a 25~Hz contra el 63\,\% de la centrada & Menor error de truncamiento y menor atenuación a la frecuencia del motor \\
+Integral & Simpson 1/3 & Error de $5.3\times10^{-5}$ contra $1.1\times10^{-2}$ del trapecio ($n = 12$) & Orden 4 con el mismo número de evaluaciones; con datos reales las tres reglas difieren menos del 0.15\,\% \\
+EDO & RK4 & Error en $x$ de $1.9\times10^{-6}$ contra $1.3\times10^{-2}$ de Euler & Orden 4. Con datos medidos su ventaja queda por debajo del error por sesgo \\
+Deriva & MC grado 1 & Desplazamiento falso de 127~m reducido a 0.31~m & Modela el sesgo y su deriva lenta; el grado 0 basta cuando el sistema inicia y termina en reposo \\
+Frecuencia & FFT de la señal completa & 22.86 contra 22.65~Hz de phyphox & Mayor resolución (0.016~Hz) que la ventana de 2.56~s de phyphox (0.39~Hz) \\
+\end{longtable}
+
+\subsection{Interpolación: por qué la lineal ganó con datos reales}
+
+La señal sintética oscila a 1.37~Hz y se muestrea a 100~Hz: unas 73 muestras por ciclo. Entre dos muestras la función es casi un arco de parábola, de modo que un polinomio cúbico la reproduce mejor que una recta. La vibración del motor, en cambio, tiene unas cuatro muestras por ciclo y ruido de medición de alrededor de 0.05~m/s$^2$. El trazador y el polinomio de Newton pasan exactamente por puntos ruidosos y muy separados en fase, y entre ellos generan curvaturas que la señal real no tiene. Por eso su error máximo fue hasta 1.6 veces el de la interpolación lineal (1.59 contra 1.02~m/s$^2$ en el cofre). En la aplicación se dejan los tres métodos disponibles: el usuario puede comprobar en la pestaña de validación cuál conviene para su señal.
+
+\subsection{Derivada: orden contra atenuación}
+
+Con $h$ fijo, aumentar el orden no siempre se traduce en menor error. La fórmula de adelante conserva más amplitud que la centrada a 25~Hz (89.8 contra 63.0\,\%), pero desplaza la señal medio paso y su error de truncamiento es de primer orden, como se ve en la Figura~\ref{fig:convergencia}. La de cinco puntos combina el mayor orden con una atenuación moderada, aunque usa cinco muestras y amplifica más el ruido: la suma de los valores absolutos de sus pesos es $18/12 = 1.5$ veces la de la centrada. Para estimar el \textit{jerk} del motor se recomienda la de cinco puntos. Si la señal fuera muy ruidosa, convendría filtrarla antes de derivar.
+
+\subsection{Integración y ecuación diferencial: el error dominante es el sesgo}
+
+En la validación analítica, la jerarquía teórica se cumple: Simpson supera al trapecio por más de dos órdenes de magnitud y RK4 a Euler por casi cuatro. Con los datos del vehículo estacionado, en cambio, la diferencia entre métodos (unos 0.3~m entre Euler y RK4) es despreciable frente al error de 127~m que produce un sesgo de 0.064~m/s$^2$. La ecuación~\eqref{eq:deriva} reproduce ese error con menos del 3\,\% de diferencia. Por eso la corrección por mínimos cuadrados fue el paso con mayor impacto en la calidad del resultado, por encima de la elección del integrador. El grado 1 dio mejores resultados que el 0 en las mediciones estacionadas porque el sesgo del sensor cambió lentamente durante el minuto de medición.
+
+\subsection{Limitaciones}
+
+\begin{itemize}
+  \item \textbf{Frecuencia de muestreo.} A 100~Hz solo se observan vibraciones por debajo de 50~Hz; en un motor de cuatro cilindros eso equivale a unas 1500~rpm. Durante el manejo aparecieron componentes de hasta 49~Hz, cerca del límite de Nyquist.
+  \item \textbf{Orientación.} En el manejo el teléfono no estaba alineado con el vehículo, así que la velocidad del eje $x$ mezcla movimiento longitudinal y lateral. Corregirlo requeriría fusionar el acelerómetro con el giroscopio.
+  \item \textbf{Comparación cofre--cabina.} Las mediciones no fueron simultáneas y el motor giraba a velocidades distintas, por lo que no permiten cuantificar el aislamiento de los soportes.
+  \item \textbf{Pérdida simulada.} El error de interpolación se midió sobre huecos generados artificialmente. Con pérdidas reales más largas el error crecería.
+\end{itemize}

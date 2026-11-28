@@ -1,0 +1,50 @@
+1) Duración: T=10.0000 s, N=986, fs=100.00 Hz
+  [OK]   duración y fs correctas
+2) Faltantes e interpolación
+   NaN=15, huecos=15, faltantes en malla=30 (malla N=1001)
+  [OK]   malla uniforme reconstruida 1001 puntos
+   lineal    error máx global=1.48e-02 | en faltantes=1.48e-02
+   lagrange  error máx global=5.48e-05 | en faltantes=5.48e-05
+   spline    error máx global=3.01e-05 | en faltantes=3.01e-05
+   spline propio vs interp1(spline) (not-a-knot): dif máx=3.05e-05
+  [OK]   lineal propia == interp1 lineal
+3) Derivada (f=sin t en [0,2pi]) — error máx y orden observado
+   adelante  E(h=0.1)=5.00e-02  orden≈1.00 (teórico 1)
+  [OK]   orden adelante
+   atras     E(h=0.1)=5.00e-02  orden≈1.00 (teórico 1)
+  [OK]   orden atras
+   centrada  E(h=0.1)=3.32e-03  orden≈2.00 (teórico 2)
+  [OK]   orden centrada
+   cinco     E(h=0.1)=1.97e-05  orden≈3.99 (teórico 4)
+  [OK]   orden cinco
+  [OK]   centrada == gradient (interior)
+4) Integral (∫_0^pi sin = 2)
+   trapecio  E(n=12)=1.14e-02  orden≈2.00 (teórico 2)
+  [OK]   orden trapecio
+   simpson13 E(n=12)=5.26e-05  orden≈4.00 (teórico 4)
+  [OK]   orden simpson13
+   simpson38 E(n=12)=1.19e-04  orden≈4.01 (teórico 4)
+  [OK]   orden simpson38
+  [OK]   Simpson 1/3 (+3/8) exacto para cúbica con n impar
+  [OK]   Simpson 3/8 (+1/3) exacto para cúbica n=7
+  [OK]   ambas Simpson exactas para cúbicas con 3..11 intervalos
+  [OK]   trapecio == trapz/cumtrapz
+  [OK]   Simpson acumulada consistente
+5) Mínimos cuadrados
+   grado 1: R2=0.892177, |p - polyfit|max=2.33e-15, cond(N)=1.0
+   grado 2: R2=1.000000, |p - polyfit|max=2.22e-15, cond(N)=7.6
+   grado 3: R2=1.000000, |p - polyfit|max=9.49e-15, cond(N)=35.8
+   grado 4: R2=1.000000, |p - polyfit|max=3.30e-14, cond(N)=211.5
+  [OK]   recupera coeficientes exactos grado 2
+  [OK]   evaluación de tendencia
+  [OK]   Gauss con pivoteo == A\b
+6) EDO dx/dt=v, dv/dt=a (señal analítica, fs=100)
+   euler  err máx v=1.06e-02  err máx x=1.34e-02
+   heun   err máx v=2.87e-04  err máx x=1.42e-03
+   rk4    err máx v=3.86e-07  err máx x=1.93e-06
+   orden observado (error máx en x(t)):
+     euler  orden≈1.11
+     heun   orden≈2.00
+     rk4    orden≈3.94
+
+Fin de pruebas.

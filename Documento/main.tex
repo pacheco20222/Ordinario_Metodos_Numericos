@@ -1,0 +1,84 @@
+% =====================================================================
+%  Proyecto Integrador de Métodos Numéricos con MATLAB
+%  Analizador numérico de vibraciones con el acelerómetro de un teléfono
+%  Formato: APA 7 (modo estudiante) — compilar con LuaLaTeX + Biber:
+%      latexmk -lualatex main.tex
+%  La portada se entrega por separado (firmada).
+% =====================================================================
+\documentclass[stu,12pt,a4paper,floatsintext,donotrepeattitle]{apa7}
+
+% ---------- Idioma y tipografía ----------
+\usepackage[spanish,es-tabla,es-noshorthands]{babel}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Termes}          % equivalente libre de Times New Roman (APA 7: 12 pt)
+\setmonofont{DejaVu Sans Mono}[Scale=0.85]
+\usepackage{csquotes}
+\usepackage[style=apa,backend=biber]{biblatex}
+\addbibresource{referencias.bib}
+
+% ---------- Matemáticas, tablas y figuras ----------
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs,longtable,array,tabularx,multirow}
+\usepackage{graphicx}
+\graphicspath{{../App/figuras/claro/}{capturas/}}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc,backgrounds}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue!50!black}
+
+% ---------- Código MATLAB ----------
+\lstdefinestyle{matlab}{
+  language=Matlab, basicstyle=\ttfamily\footnotesize, breaklines=true,
+  keywordstyle=\color{blue!60!black}\bfseries, commentstyle=\color{green!40!black},
+  stringstyle=\color{red!55!black}, numbers=left, numberstyle=\tiny\color{gray},
+  frame=single, rulecolor=\color{gray!50}, columns=fullflexible, keepspaces=true,
+  showstringspaces=false, extendedchars=true, tabsize=4, xleftmargin=1.5em
+}
+\lstset{style=matlab}
+% Emojis de los botones de la interfaz (sin glifo en la fuente monoespaciada)
+\usepackage{newunicodechar}
+\newunicodechar{📂}{[carpeta]}\newunicodechar{🧪}{[prueba]}\newunicodechar{💾}{[guardar]}\newunicodechar{📊}{[gráfica]}\newunicodechar{⏸}{[pausa]}
+
+% ---------- Utilidades ----------
+\newcommand{\matlab}{MATLAB}
+\newcommand{\dd}{\,\mathrm{d}}
+% Captura o fotografía: si el archivo existe se inserta; si no, se deja un recuadro
+\newcommand{\captura}[3]{%
+  \IfFileExists{capturas/#1}{\includegraphics[width=#2]{capturas/#1}}{%
+    \fbox{\parbox[c][5.5cm][c]{#2}{\centering\small\textbf{PENDIENTE:} #3\\[4pt]
+      \footnotesize Guardar como \texttt{Documento/capturas/\detokenize{#1}}}}}}
+
+\title{Analizador numérico de vibraciones con el acelerómetro de un teléfono}
+\shorttitle{}  % APA 7 estudiante: sin encabezado, solo número de página
+\author{José Ricardo Pacheco}
+\affiliation{Universidad Anáhuac Mayab}
+\course{Métodos Numéricos}
+\professor{}
+\duedate{Diciembre de 2026}
+
+\begin{document}
+
+% La portada firmada se entrega por separado (instrucciones del proyecto).
+\input{secciones/00_resumen}
+\tableofcontents
+\clearpage
+\input{secciones/01_introduccion}
+\input{secciones/02_marco_teorico}
+\input{secciones/03_metodologia}
+\input{secciones/04_resultados}
+\input{secciones/05_analisis}
+\input{secciones/06_conclusiones}
+
+\clearpage
+\printbibliography[title=Referencias]
+
+\clearpage
+\appendix
+\input{secciones/A_bitacora}
+\input{secciones/B_pruebas}
+\input{secciones/C_codigo}
+
+\end{document}

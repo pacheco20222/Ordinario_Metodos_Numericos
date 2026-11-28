@@ -1,0 +1,121 @@
+
+=========== motor_ralenti_cofre.csv ===========
+Señales: Linear Acceleration x (m/s^2) | Linear Acceleration y (m/s^2) | Linear Acceleration z (m/s^2) | Absolute acceleration (m/s^2)
+Eje 1: T=63.97 s fs=100.0 Hz N=6397 | NaN=0 huecos=0 atípicos=0 | fDom=25.26 Hz (758 rpm 4cil) | RMS=0.185 pico=0.967 | jerk máx=82.1
+Eje 2: T=63.97 s fs=100.0 Hz N=6397 | NaN=0 huecos=0 atípicos=0 | fDom=25.26 Hz (758 rpm 4cil) | RMS=0.215 pico=0.669 | jerk máx=48.9
+Eje 3: T=63.97 s fs=100.0 Hz N=6397 | NaN=0 huecos=0 atípicos=2 | fDom=25.26 Hz (758 rpm 4cil) | RMS=0.289 pico=0.863 | jerk máx=109.3
+       atípicos en t = [60.12 60.14] s
+-- Eje 3: con y sin detección de atípicos, correcciones de drift (RK4):
+   atípicos=0 ninguna    v(T)= -4.0938  v máx=  4.094 m/s  x(T)= -127.233 m  pico=0.86
+   atípicos=0 sesgo      v(T)= -0.0056  v máx=  0.088 m/s  x(T)=    3.537 m  pico=0.86
+   atípicos=0 tendencia  v(T)= -0.0056  v máx=  0.031 m/s  x(T)=   -0.308 m  pico=0.86
+   atípicos=1 ninguna    v(T)= -4.0942  v máx=  4.094 m/s  x(T)= -127.234 m  pico=0.86
+   atípicos=1 sesgo      v(T)= -0.0056  v máx=  0.088 m/s  x(T)=    3.546 m  pico=0.86
+   atípicos=1 tendencia  v(T)= -0.0056  v máx=  0.031 m/s  x(T)=   -0.308 m  pico=0.86
+-- Pérdida simulada 5% (eje 3), RMSE contra valor verdadero:
+   lineal    RMSE=0.4121  máx=1.0191  (320 pts)
+   lagrange  RMSE=0.5792  máx=1.3574  (320 pts)
+   spline    RMSE=0.6234  máx=1.5872  (320 pts)
+-- Integral (eje 3, sesgo, atípicos) por método:
+   trapecio   I=-0.00396701
+   simpson13  I=-0.01808495
+   simpson38  I=-0.00977671
+-- Comparación completa (0.07 s):
+   Interpolación      Lineal                   323 pts            4.121e-01   9.356e-01  
+   Interpolación      Newton local (cúbico)    323 pts            5.792e-01   NaN        
+   Interpolación      Spline cúbico natural    323 pts            6.234e-01   1.500e+00  
+   Derivada           Adelante O(h)            max|dy|=93.65      NaN         6.454e+01  
+   Derivada           Atrás O(h)               max|dy|=93.65      NaN         6.454e+01  
+   Derivada           Centrada O(h^2)          max|dy|=109.3      NaN         0.000e+00  
+   Derivada           5 puntos O(h^4)          max|dy|=110.8      NaN         1.981e+01  
+   Integral           Trapecio O(h^2)          -4.288071          NaN         0.000e+00  
+   Integral           Simpson 1/3 O(h^4)       -4.281877          NaN         6.194e-03  
+   Integral           Simpson 3/8 O(h^4)       -4.294185          NaN         6.114e-03  
+   EDO x(t)           Euler O(h)               x(T)=-137.67142    NaN         2.980e-01  
+   EDO x(t)           Heun / RK2 O(h^2)        x(T)=-137.96941    NaN         5.000e-05  
+   EDO x(t)           Runge-Kutta 4 O(h^4)     x(T)=-138.00376    NaN         3.433e-02  
+   Mínimos cuadrados  Grado 1                  R^2=0.00000        NaN         2.776e-17  
+   Mínimos cuadrados  Grado 2                  R^2=0.00004        NaN         5.551e-17  
+   Mínimos cuadrados  Grado 3                  R^2=0.00004        NaN         3.192e-16  
+   Mínimos cuadrados  Grado 4                  R^2=0.00005        NaN         4.580e-16  
+
+=========== manejo_tablero.csv ===========
+Señales: Linear Acceleration x (m/s^2) | Linear Acceleration y (m/s^2) | Linear Acceleration z (m/s^2) | Absolute acceleration (m/s^2)
+Eje 1: T=78.52 s fs=100.0 Hz N=7851 | NaN=0 huecos=0 atípicos=5 | fDom=29.47 Hz (884 rpm 4cil) | RMS=0.567 pico=3.481 | jerk máx=248.5
+       atípicos en t = [24.24 24.25 24.26 24.3 73.65] s
+Eje 2: T=78.52 s fs=100.0 Hz N=7851 | NaN=0 huecos=0 atípicos=1 | fDom=7.88 Hz (236 rpm 4cil) | RMS=0.502 pico=3.485 | jerk máx=200.5
+       atípicos en t = 24.24 s
+Eje 3: T=78.52 s fs=100.0 Hz N=7851 | NaN=0 huecos=0 atípicos=2 | fDom=34.22 Hz (1026 rpm 4cil) | RMS=1.059 pico=6.952 | jerk máx=525.8
+       atípicos en t = [16.88 72.83] s
+-- Eje 1: con y sin detección de atípicos, correcciones de drift (RK4):
+   atípicos=0 ninguna    v(T)=  4.1162  v máx=  5.023 m/s  x(T)=  163.256 m  pico=25.32
+   atípicos=0 sesgo      v(T)=  0.0020  v máx=  2.637 m/s  x(T)=    1.730 m  pico=25.32
+   atípicos=0 tendencia  v(T)=  0.0020  v máx=  2.608 m/s  x(T)=    0.177 m  pico=25.32
+   atípicos=1 ninguna    v(T)=  4.4462  v máx=  5.335 m/s  x(T)=  180.253 m  pico=3.48
+   atípicos=1 sesgo      v(T)=  0.0020  v máx=  2.758 m/s  x(T)=    5.772 m  pico=3.48
+   atípicos=1 tendencia  v(T)=  0.0020  v máx=  2.654 m/s  x(T)=    0.180 m  pico=3.48
+-- Pérdida simulada 5% (eje 1), RMSE contra valor verdadero:
+   lineal    RMSE=0.5950  máx=2.5027  (395 pts)
+   lagrange  RMSE=0.8712  máx=4.6631  (395 pts)
+   spline    RMSE=1.0417  máx=5.5280  (395 pts)
+-- Integral (eje 1, sesgo, atípicos) por método:
+   trapecio   I=0.00150745
+   simpson13  I=-0.06697515
+   simpson38  I=0.05919709
+-- Comparación completa (0.07 s):
+   Interpolación      Lineal                   400 pts            5.950e-01   2.309e+00  
+   Interpolación      Newton local (cúbico)    400 pts            8.712e-01   NaN        
+   Interpolación      Spline cúbico natural    400 pts            1.042e+00   5.364e+00  
+   Derivada           Adelante O(h)            max|dy|=571.7      NaN         3.699e+02  
+   Derivada           Atrás O(h)               max|dy|=571.7      NaN         3.699e+02  
+   Derivada           Centrada O(h^2)          max|dy|=250.8      NaN         0.000e+00  
+   Derivada           5 puntos O(h^4)          max|dy|=330.9      NaN         8.507e+01  
+   Integral           Trapecio O(h^2)          4.223102           NaN         4.441e-15  
+   Integral           Simpson 1/3 O(h^4)       4.169567           NaN         5.354e-02  
+   Integral           Simpson 3/8 O(h^4)       4.303135           NaN         8.003e-02  
+   EDO x(t)           Euler O(h)               x(T)=175.07259     NaN         2.029e-01  
+   EDO x(t)           Heun / RK2 O(h^2)        x(T)=175.27552     NaN         1.230e-04  
+   EDO x(t)           Runge-Kutta 4 O(h^4)     x(T)=175.27057     NaN         4.983e-03  
+   Mínimos cuadrados  Grado 1                  R^2=0.00008        NaN         8.327e-17  
+   Mínimos cuadrados  Grado 2                  R^2=0.00186        NaN         2.498e-16  
+   Mínimos cuadrados  Grado 3                  R^2=0.00489        NaN         3.469e-16  
+   Mínimos cuadrados  Grado 4                  R^2=0.00831        NaN         1.416e-15  
+
+=========== motor_ralenti_cabina.csv ===========
+Señales: Linear Acceleration x (m/s^2) | Linear Acceleration y (m/s^2) | Linear Acceleration z (m/s^2) | Absolute acceleration (m/s^2)
+Eje 1: T=63.54 s fs=100.0 Hz N=6353 | NaN=0 huecos=0 atípicos=0 | fDom=22.86 Hz (686 rpm 4cil) | RMS=0.349 pico=0.664 | jerk máx=95.8
+Eje 2: T=63.54 s fs=100.0 Hz N=6353 | NaN=0 huecos=0 atípicos=0 | fDom=45.74 Hz (1372 rpm 4cil) | RMS=0.097 pico=0.261 | jerk máx=16.0
+Eje 3: T=63.54 s fs=100.0 Hz N=6353 | NaN=0 huecos=0 atípicos=0 | fDom=22.86 Hz (686 rpm 4cil) | RMS=0.430 pico=0.864 | jerk máx=76.3
+-- Eje 3: con y sin detección de atípicos, correcciones de drift (RK4):
+   atípicos=0 ninguna    v(T)= -5.2455  v máx=  5.246 m/s  x(T)= -163.080 m  pico=0.86
+   atípicos=0 sesgo      v(T)=  0.0011  v máx=  0.093 m/s  x(T)=    3.604 m  pico=0.86
+   atípicos=0 tendencia  v(T)=  0.0011  v máx=  0.020 m/s  x(T)=    0.124 m  pico=0.86
+   atípicos=1 ninguna    v(T)= -5.2455  v máx=  5.246 m/s  x(T)= -163.080 m  pico=0.86
+   atípicos=1 sesgo      v(T)=  0.0011  v máx=  0.093 m/s  x(T)=    3.604 m  pico=0.86
+   atípicos=1 tendencia  v(T)=  0.0011  v máx=  0.020 m/s  x(T)=    0.124 m  pico=0.86
+-- Pérdida simulada 5% (eje 3), RMSE contra valor verdadero:
+   lineal    RMSE=0.6207  máx=1.3394  (321 pts)
+   lagrange  RMSE=0.8801  máx=2.2365  (321 pts)
+   spline    RMSE=0.8979  máx=2.5439  (321 pts)
+-- Integral (eje 3, sesgo, atípicos) por método:
+   trapecio   I=0.00030376
+   simpson13  I=0.01012244
+   simpson38  I=0.00026133
+-- Comparación completa (0.05 s):
+   Interpolación      Lineal                   321 pts            6.207e-01   1.331e+00  
+   Interpolación      Newton local (cúbico)    321 pts            8.801e-01   NaN        
+   Interpolación      Spline cúbico natural    321 pts            8.979e-01   2.544e+00  
+   Derivada           Adelante O(h)            max|dy|=107.9      NaN         6.991e+01  
+   Derivada           Atrás O(h)               max|dy|=107.9      NaN         6.991e+01  
+   Derivada           Centrada O(h^2)          max|dy|=95.29      NaN         2.035e-11  
+   Derivada           5 puntos O(h^4)          max|dy|=108.6      NaN         2.190e+01  
+   Integral           Trapecio O(h^2)          -5.230780          NaN         7.105e-15  
+   Integral           Simpson 1/3 O(h^4)       -5.215947          NaN         1.483e-02  
+   Integral           Simpson 3/8 O(h^4)       -5.222353          NaN         8.426e-03  
+   EDO x(t)           Euler O(h)               x(T)=-162.08620    NaN         6.105e-02  
+   EDO x(t)           Heun / RK2 O(h^2)        x(T)=-162.02516    NaN         4.725e-05  
+   EDO x(t)           Runge-Kutta 4 O(h^4)     x(T)=-161.99014    NaN         3.501e-02  
+   Mínimos cuadrados  Grado 1                  R^2=0.00006        NaN         1.110e-16  
+   Mínimos cuadrados  Grado 2                  R^2=0.00050        NaN         9.714e-17  
+   Mínimos cuadrados  Grado 3                  R^2=0.00052        NaN         8.327e-17  
+   Mínimos cuadrados  Grado 4                  R^2=0.00059        NaN         5.135e-16  

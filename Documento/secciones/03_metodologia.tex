@@ -1,0 +1,185 @@
+\section{Metodología}
+
+\subsection{Sistema físico e instrumentación}
+
+El sistema analizado es un automóvil Kia Forte L 2019 con motor de gasolina de cuatro cilindros. Todo el procesamiento se programó en \matlab{} \parencite{matlab}. Las mediciones se tomaron con un iPhone 15 Pro Max (identificador de modelo iPhone16,2, registrado en los metadatos del archivo) y la aplicación phyphox 1.2.1, usando el experimento \textit{Acceleration (without g)}, que entrega la aceleración lineal sin la componente de gravedad en los tres ejes del teléfono \parencite{staacks2018}. En el iPhone el eje $x$ es lateral, el $y$ va a lo largo de la pantalla y el $z$ es perpendicular a ella. Como verificación independiente se registró también el experimento \textit{Acceleration Spectrum} de la misma aplicación, que calcula su propio espectro de frecuencia.
+
+\begin{table}[htbp]
+\caption{Mediciones realizadas el 24 de noviembre de 2026}
+\label{tab:mediciones}
+\centering\small
+\begin{tabular}{@{}lp{6.2cm}cccc@{}}
+\toprule
+Archivo & Condición & Inicio & $T$ [s] & $N$ & $f_s$ [Hz] \\
+\midrule
+\texttt{motor\_ralenti\_cofre} & Estacionado, ralentí recién encendido, teléfono sobre el cofre & 11:22 & 63.97 & 6\,397 & 100.0 \\
+\texttt{manejo\_tablero} & En circulación, teléfono sobre el tablero & 11:28 & 78.52 & 7\,851 & 100.0 \\
+\texttt{motor\_ralenti\_cabina} & Estacionado, ralentí, teléfono sobre la tapa del descansabrazos & 11:53 & 63.54 & 6\,353 & 100.0 \\
+\bottomrule
+\end{tabular}
+\figurenote{Las tres mediciones se exportaron desde phyphox en formato Excel y se convirtieron también a CSV. $T$: duración total; $N$: número de muestras; $f_s$: frecuencia de muestreo nominal.}
+\end{table}
+
+\begin{figure}[htbp]
+\caption{Montaje del teléfono durante las mediciones}
+\label{fig:montaje}
+\centering
+\captura{montaje_cofre.jpg}{0.45\linewidth}{fotografía del teléfono sobre el cofre}\hfill
+\captura{montaje_cabina.jpg}{0.45\linewidth}{fotografía del teléfono sobre el descansabrazos}
+\figurenote{Izquierda: medición sobre el cofre. Derecha: medición en la cabina.}
+\end{figure}
+
+\subsection{Protocolo de medición}
+
+Las mediciones con el vehículo estacionado se hicieron con el teléfono fijo, boca arriba y lejos de fuentes de calor. Primero se tomó la del cofre, con el motor recién encendido, y unos 30 minutos después la de la cabina, ya con el motor caliente. La medición en circulación se hizo con el teléfono sobre el tablero, sin que el conductor lo manipulara. El protocolo completo, con las recomendaciones de seguridad, está en el archivo \texttt{protocolo\_medicion.md} del repositorio.
+
+\subsection{Arquitectura del programa}
+
+El programa separa la interfaz de la matemática en tres capas:
+\begin{enumerate}
+  \item \textbf{Interfaz} (\texttt{AnalizadorVibracionesApp.m}): una clase que hereda de \texttt{matlab.apps.AppBase}, la misma estructura que genera App Designer \parencite{mathworks_onramp}. Contiene los componentes, sus funciones de respuesta, la reproducción en tiempo real y la exportación.
+  \item \textbf{Motor} (\texttt{nm\_procesar.m}): ejecuta la cadena completa de cálculo y devuelve una estructura con todos los resultados. Como no depende de la interfaz, puede probarse automáticamente.
+  \item \textbf{Métodos} (\texttt{metodos/nm\_*.m}): una función por algoritmo, programada sin recurrir a \texttt{interp1}, \texttt{gradient}, \texttt{trapz}, \texttt{ode45} ni \texttt{polyfit}. Esas funciones de \matlab{} se usan solo para comparar resultados.
+\end{enumerate}
+
+\begin{table}[htbp]
+\caption{Funciones numéricas implementadas}
+\label{tab:funciones}
+\centering\small
+\begin{tabular}{@{}lp{9.4cm}@{}}
+\toprule
+Función & Método / propósito \\
+\midrule
+\texttt{nm\_duracion} & Duración total, número de muestras, paso y frecuencia de muestreo (ec.~\ref{eq:duracion}) \\
+\texttt{nm\_detectar\_faltantes} & NaN, huecos temporales y atípicos; malla uniforme de reconstrucción \\
+\texttt{nm\_hampel} & Filtro de Hampel local (mediana y MAD en ventana móvil) \\
+\texttt{nm\_interpolar}, \texttt{nm\_evaluar\_interp} & Reconstrucción por interpolación lineal, Newton local o trazador natural \\
+\texttt{nm\_lagrange\_local} & Polinomio de Newton en diferencias divididas con esquema de Horner \\
+\texttt{nm\_spline\_natural}, \texttt{nm\_thomas} & Trazador cúbico natural; sistema tridiagonal (ec.~\ref{eq:spline}) \\
+\texttt{nm\_derivada} & Diferencias hacia adelante, atrás, centradas y de cinco puntos \\
+\texttt{nm\_integral} & Trapecio, Simpson 1/3 y 3/8 compuestos; integral acumulada \\
+\texttt{nm\_edo\_movimiento} & Euler, Heun y RK4 para el sistema (ec.~\ref{eq:edo}) \\
+\texttt{nm\_minimos\_cuadrados}, \texttt{nm\_gauss\_pivoteo} & Ecuaciones normales con variable escalada; eliminación gaussiana con pivoteo \\
+\texttt{nm\_simular\_perdida} & Elimina muestras reales en ráfagas para medir el error de interpolación \\
+\texttt{nm\_senal\_prueba} & Señal sintética con solución analítica \\
+\texttt{nm\_comparar\_metodos} & Ejecuta todos los métodos y los compara contra la solución analítica y contra \matlab{} \\
+\texttt{nm\_cargar\_datos} & Lectura de CSV/XLSX de phyphox, MAT de \matlab{} Mobile y tablas genéricas \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Diagrama de bloques}
+
+La Figura~\ref{fig:bloques} muestra el flujo de datos. La señal cargada pasa por la detección de faltantes y atípicos y se reconstruye sobre una malla uniforme, requisito de las fórmulas de diferencias finitas y de las reglas de Simpson. Sobre esa señal uniforme se calculan, en paralelo, la derivada, la tendencia por mínimos cuadrados y el espectro. La tendencia se resta antes de integrar y de resolver la ecuación diferencial. Todos los resultados alimentan las gráficas, los indicadores, el monitor en tiempo real y la exportación.
+
+\begin{figure}[htbp]
+\caption{Diagrama de bloques del analizador}
+\label{fig:bloques}
+\centering
+\begingroup\linespread{1}\selectfont\hyphenpenalty=10000
+\begin{tikzpicture}[
+  node distance=6mm and 8mm,
+  blq/.style={draw, rounded corners=2pt, align=center, font=\footnotesize\linespread{1}\selectfont, minimum height=10mm, text width=30mm, inner sep=3pt, fill=blue!6},
+  ent/.style={blq, fill=gray!12},
+  sal/.style={blq, fill=green!8},
+  dec/.style={blq, fill=orange!10},
+  flecha/.style={-{Stealth[length=2mm]}, thick}
+]
+\node[ent] (arch) {Archivo de datos\\ \scriptsize CSV / XLSX / MAT};
+\node[blq, right=of arch] (carga) {Carga y selección de eje\\ \scriptsize \texttt{nm\_cargar\_datos}};
+\node[blq, right=of carga] (dur) {Duración y muestreo\\ \scriptsize $T$, $N$, $h$, $f_s$};
+\node[blq, below=of dur] (falt) {Detección de faltantes\\ \scriptsize NaN, huecos, Hampel};
+\node[dec, left=of falt] (interp) {Interpolación\\ \scriptsize lineal / Newton / spline};
+\node[blq, left=of interp] (malla) {Señal uniforme\\ \scriptsize $y(t_k)$, paso $h$};
+\node[dec, below=12mm of malla] (der) {Derivada\\ \scriptsize adelante / atrás / centrada / 5 pts};
+\node[dec, right=of der] (mc) {Mínimos cuadrados\\ \scriptsize tendencia grado $g$};
+\node[dec, right=of mc] (fft) {Espectro FFT\\ \scriptsize $f$ dominante, rpm};
+\node[dec, below=of mc] (drift) {Corrección de deriva\\ \scriptsize $a - \hat b(t)$};
+\node[dec, below=of drift] (int) {Integral\\ \scriptsize trapecio / Simpson};
+\node[dec, right=of int] (edo) {EDO de movimiento\\ \scriptsize Euler / Heun / RK4};
+\node[sal, below=12mm of der] (graf) {Gráficas e indicadores};
+\node[sal, below=12mm of int] (rt) {Monitor en tiempo real\\ \scriptsize grabar inicio/fin};
+\node[sal, right=of rt] (exp) {Exportación\\ \scriptsize XLSX / CSV / MAT + PNG};
+\draw[flecha] (arch) -- (carga);
+\draw[flecha] (carga) -- (dur);
+\draw[flecha] (dur) -- (falt);
+\draw[flecha] (falt) -- (interp);
+\draw[flecha] (interp) -- (malla);
+\draw[flecha] (malla) -- (der);
+\draw[flecha] (malla.south) ++(0,-4mm) -| (mc.north);
+\draw[flecha] (malla.south) ++(0,-4mm) -| (fft.north);
+\draw[flecha] (mc) -- (drift);
+\draw[flecha] (drift) -- (int);
+\draw[flecha] (drift.east) -| (edo.north);
+\draw[flecha] (der) -- (graf);
+\draw[flecha] (int) -- (rt);
+\draw[flecha] (edo) -- (exp);
+\draw[flecha] (int.west) -- ++(-4mm,0) |- (graf.east);
+\draw[flecha] (fft.east) -- ++(4mm,0) |- (exp.east);
+\draw[flecha] (rt) -- (exp);
+\end{tikzpicture}
+\endgroup
+\figurenote{Gris: entrada. Azul: procesamiento fijo. Naranja: procesos con método seleccionable desde la interfaz. Verde: salidas. El motor \texttt{nm\_procesar} ejecuta todos los bloques de procesamiento cada vez que el usuario cambia un parámetro.}
+\end{figure}
+
+\subsection{Panel de control}
+
+La Tabla~\ref{tab:panel} relaciona cada elemento de la interfaz con el requisito del proyecto que atiende.
+
+\begin{longtable}{@{}p{3.8cm}p{6.6cm}p{3.6cm}@{}}
+\caption{Elementos del panel de control}\label{tab:panel}\\
+\toprule
+Elemento & Función & Requisito \\
+\midrule
+\endfirsthead
+\toprule
+Elemento & Función & Requisito \\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+Botón \textit{Cargar datos} & Abre un archivo CSV, XLSX o MAT & Botón de carga de datos \\
+Botón \textit{Señal de prueba} & Genera la señal analítica de validación & Validación \\
+Menú \textit{Señal / eje} & Eje $x$, $y$, $z$ o magnitud & Selección de parámetros \\
+Menú \textit{Interpolación} & Lineal, Newton/Lagrange local, trazador natural & Menú de algoritmos; faltantes \\
+\textit{Grado Lagrange}, \textit{Factor de hueco} & Grado del polinomio local (1--6) y umbral de hueco & Parámetros \\
+\textit{Simular pérdida [\%]} & Elimina muestras reales para medir el error & Faltantes (datos reales) \\
+Casilla \textit{Atípicos} & Activa el filtro de Hampel & Faltantes \\
+Menú \textit{Derivada} & Adelante, atrás, centrada, cinco puntos & Derivada de la señal \\
+Menú \textit{Integral} & Trapecio, Simpson 1/3, Simpson 3/8 & Integral de la señal \\
+Menú \textit{EDO} & Euler, Heun, RK4 & Ecuaciones diferenciales \\
+Menú \textit{Tendencia (MC)} & Grado 1 a 6 & Línea de tendencia \\
+Menú \textit{Corrección de deriva} & Ninguna, sesgo constante, tendencia, reposo inicial & Integración correcta \\
+\textit{Cilindros}, \textit{f mín.\ espectro} & Conversión de frecuencia a rpm; límite inferior de búsqueda & Caso de estudio \\
+Menú \textit{Gráfica procesada} & Señal y tendencia, derivada, integral, EDO, espectro & Gráfica de datos procesados \\
+Gráfica superior & Datos originales, puntos interpolados y atípicos & Gráfica de datos originales \\
+Panel \textit{Resultados} & Duración, muestras, faltantes, integral, $v$ y $x$ finales, jerk máximo, pico, RMS, frecuencia, ecuación de tendencia, $R^2$, error de interpolación & Despliegue de valores \\
+Pestaña \textit{Tiempo real} & Velocidad de reproducción, ventana, \textit{Iniciar}, \textit{Iniciar grabación}, \textit{Terminar grabación}, indicador luminoso & Inicio y fin del almacenamiento \\
+\textit{Nombre archivo}, \textit{Formato}, \textit{Exportar} & Nombre elegido por el usuario; XLSX, CSV o MAT; gráficas PNG en tema claro y oscuro & Guardar/exportar resultados \\
+Pestaña \textit{Validación} & Tabla y gráfica comparativa de todos los métodos & Análisis de resultados \\
+Menú \textit{Tema} & Automático, claro u oscuro \parencite{mathworks_theme} & Usabilidad \\
+\end{longtable}
+
+\subsection{Reproducción en tiempo real y exportación}
+
+La pestaña de tiempo real reproduce la señal procesada con un temporizador de \matlab{} que se actualiza cada 0.05~s. En cada actualización avanza $\max\bigl(1, \operatorname{round}(r \cdot 0.05/h)\bigr)$ muestras, donde $r$ es el factor de velocidad elegido (0.5$\times$ a 10$\times$), y dibuja una ventana móvil de la aceleración y de la velocidad. Al pulsar \textit{Iniciar grabación} se guarda el índice actual; al pulsar \textit{Terminar grabación}, el índice final. El segmento grabado se resalta en rojo. \textit{Exportar} escribe ese segmento con el nombre que escribió el usuario: tiempo, aceleración medida y reconstruida, indicador de punto interpolado, derivada, integral acumulada, velocidad, posición y tendencia. Agrega una hoja de resumen con los parámetros y resultados y, si se hizo la comparación, la tabla de validación. Si no hay grabación, la aplicación pregunta si se exporta la señal completa.
+
+\subsection{Estrategia de validación}
+
+\paragraph{Señal analítica.} Se construyó la señal
+\begin{equation}
+  a(t) = A\sin(\omega t) + b_0 + b_1 t, \qquad A = 2,\; f = 1.37~\text{Hz},\; b_0 = 0.05,\; b_1 = 0.01,
+\end{equation}
+cuya velocidad, posición y derivada exactas son
+\begin{equation}
+  v(t) = \frac{A}{\omega}(1 - \cos\omega t) + b_0 t + \frac{b_1 t^2}{2}, \qquad
+  x(t) = \frac{A}{\omega}\Bigl(t - \frac{\sin\omega t}{\omega}\Bigr) + \frac{b_0 t^2}{2} + \frac{b_1 t^3}{6}, \qquad
+  a'(t) = A\omega\cos\omega t + b_1 .
+\end{equation}
+A esta señal se le quitó el 3\,\% de las muestras: la mitad como NaN y la otra mitad como huecos temporales. La frecuencia se eligió para que la duración de 10~s no contuviera un número entero de ciclos, porque en ese caso la regla del trapecio es excepcionalmente exacta y la comparación sería engañosa (bitácora, entrada 4).
+
+\paragraph{Órdenes de convergencia.} Para cada método se midió el error con varios valores de $h$ y se ajustó la pendiente de $\log E$ contra $\log h$.
+
+\paragraph{Datos reales.} Como las mediciones no tienen huecos, se eliminó a propósito el 5\,\% de las muestras en ráfagas de 1 a 5 y se comparó cada interpolación contra el valor verdadero. Para la frecuencia se usó como referencia el espectro calculado por phyphox, y para la integración, el hecho físico de que el vehículo estacionado no se desplaza.
+
+\paragraph{Pruebas automáticas.} El repositorio incluye cuatro programas de prueba. \texttt{prueba\_metodos.m} hace 19 verificaciones de exactitud y orden. \texttt{prueba\_motor.m} y \texttt{prueba\_datos\_reales.m} recorren la cadena completa. \texttt{prueba\_gui.m} acciona todos los botones y todas las opciones de los menús, reproduce en tiempo real, graba y exporta en los tres formatos. Su salida está en el Apéndice~\ref{app:pruebas}.

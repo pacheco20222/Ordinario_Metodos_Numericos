@@ -1,0 +1,23 @@
+Salida de exportación: .../T/prueba_app_vibraciones
+[OK] Señal de prueba: T = 10.0000 s, I = 1.30414 m/s
+[OK] Menú "Lineal": 3 opciones
+[OK] Menú "Adelante O(h)": 4 opciones
+[OK] Menú "Trapecio O(h²)": 3 opciones
+[OK] Menú "Euler O(h)": 3 opciones
+[OK] Menú "Grado 1 (lineal)": 6 opciones
+[OK] Menú "Ninguna": 4 opciones
+[OK] Menú "Señal + tendencia": 5 opciones
+[OK] Spinners y casillas
+[OK] Comparación: 17 filas
+[OK] Archivo phyphox: 4 señales, faltantes = 140 puntos (4.67 %)
+[OK] Pérdida simulada 5 %: RMSE 0.5367 | máx 4.536 m/s^2 (149 pts)
+[OK] Datos reales motor_ralenti_cofre.csv: T = 63.9741 s | f dom = 25.26 Hz ≈ 758 rpm (4 cil.)
+[OK] Datos reales manejo_tablero.csv: T = 78.5247 s | f dom = 34.22 Hz ≈ 1026 rpm (4 cil.)
+[OK] Datos reales originales_phyphox/acc_without_g_outside_car.xlsx: T = 63.9741 s | f dom = 25.26 Hz ≈ 758 rpm (4 cil.)
+[OK] Grabación exportada: .../prueba_app_vibraciones/prueba_1.xlsx
+[OK] Grabación exportada: .../prueba_app_vibraciones/prueba_2.csv
+[OK] Grabación exportada: .../prueba_app_vibraciones/prueba_3.mat
+[OK] PNG en tema claro y oscuro
+[OK] Exportación completa: 1001 filas x 9 columnas
+
+===== PRUEBA DE INTERFAZ SUPERADA (29 acciones) =====
